@@ -8,6 +8,8 @@ To compile the software use VS 2019 with MFC enabled, and the June 2010 DirectX 
 To use the software, open a .mesh file from the sample data folder.
 
 
+
+
 ![alt text](https://github.com/nodecomplete/FaceView/blob/master/FaceView/ScreenShot.jpg)
 
 
