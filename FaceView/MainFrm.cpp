@@ -63,12 +63,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	//	return -1;      // fail to create
 	//}
 
-	if (!m_wndStatusBar.Create(this))
-	{
-		TRACE0("Failed to create status bar\n");
-		return -1;      // fail to create
-	}
-	m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
+	//if (!m_wndStatusBar.Create(this))
+	//{
+	//	TRACE0("Failed to create status bar\n");
+	//	return -1;      // fail to create
+	//}
+	//m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
 	 
 	// TODO: Delete these three lines if you don't want the toolbar to be dockable
 	//m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);

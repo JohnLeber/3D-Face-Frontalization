@@ -23,8 +23,7 @@ BEGIN_MESSAGE_MAP(CFaceViewApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, &CFaceViewApp::OnAppAbout)
 	// Standard file based document commands 
 	ON_COMMAND(ID_FILE_OPEN, &CFaceViewApp::OnFileOpen)
-	// Standard print setup command
-	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinApp::OnFilePrintSetup)
+	// Standard print setup command 
 END_MESSAGE_MAP()
 
 
@@ -92,7 +91,7 @@ BOOL CFaceViewApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	SetRegistryKey(_T("NodeComplete"));
 	LoadStdProfileSettings(4);  // Load standard INI file options (including MRU)
 
 
