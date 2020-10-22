@@ -269,7 +269,7 @@ void CFaceViewView::Render()
 		hr = gd3dDevice->SetRenderTarget(0, backbuffer);
 		hr = gd3dDevice->SetDepthStencilSurface(mDepthStencil);
 		ReleaseCOM(backbuffer);
-		//shadow map
+		//shadow map used to get 
 		if (pDoc && pDoc->m_pFaceMesh && !m_bSetTextureMode)
 		{
 			m_pDepthMap->beginScene();
@@ -326,12 +326,9 @@ void CFaceViewView::Render()
 			}
 		}
 		else
-		{
-			 
+		{			 
 			// Draw the scene data stored in the document class. 
-
-			gd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
- 
+			gd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); 
 			if (pDoc->m_pFaceMesh)
 			{
 				FLOAT scaleFactor = 1;
@@ -360,7 +357,7 @@ void CFaceViewView::Render()
 					FLOAT nRightZ = 0;
 					float nEyeX = pDoc->m_nLeftEyeX / 224.0f;
 					float nEyeY = pDoc->m_nLeftEyeY / 224.0f;
-					//project landmark values for left/right eye from cropped image space to world space
+					//project landmark values for left/right eye from cropped (224 x 224) image space to world space
 					if (CalcMarkerPos(nEyeX, nEyeY, lightView, lightLens, nLeftX, nLeftY, nLeftZ))
 					{
 						nEyeX = pDoc->m_nRightEyeX / 224.0f;
@@ -481,16 +478,17 @@ void CFaceViewView::Render()
 							nEyeX = pDoc->m_nRightEyeX / 224.0f;
 							nEyeY = pDoc->m_nRightEyeY / 224.0f;
 							DrawMarker(nEyeX, nEyeY, Rotation, lightView, lightLens, pDoc->m_pEyeMesh);
+
+							/*float nNoseX = pDoc->m_nNoseX / 224.0f;
+							float nNoseY = pDoc->m_nNoseY / 224.0f;
+							DrawMarker(nNoseX, nNoseY, Rotation, lightView, lightLens, pDoc->m_pEyeMesh);*/
+
 							m_pEffects->m_pFX->EndPass();
 							m_pEffects->m_pFX->End();
 						}
 					}
 				 
-				}
-				/*if (pDoc->m_pFaceMesh)
-				{
-					pDoc->m_pFaceMesh->DrawSubset(0);
-				}*/
+				} 
 			}
 
 		}

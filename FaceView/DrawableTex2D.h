@@ -2,7 +2,9 @@
 #pragma once
 #ifndef _NODIRECTX
 #include <d3dx9.h>
- 
+//=============================================================================
+// DrawableTex2D.cpp by Frank Luna (C) 2005 All Rights Reserved.
+//=============================================================================
 class DrawableTex2D
 {
 public:

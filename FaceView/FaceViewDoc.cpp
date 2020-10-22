@@ -177,6 +177,8 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	m_nLeftEyeY = 0;
 	m_nRightEyeX = 0;
 	m_nRightEyeY = 0;
+	m_nNoseX = 0;
+	m_nNoseY = 0;
 
 	//load textures 
 	if (m_pTexture)
@@ -213,6 +215,10 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 				else if (nLandmarkID == 1)
 				{
 					sscanf_s(buffer + 1, "%f %f", &m_nRightEyeX, &m_nRightEyeY);
+				}
+				else if (nLandmarkID == 2)
+				{
+					sscanf_s(buffer + 1, "%f %f", &m_nNoseX, &m_nNoseY);
 				}
 				nLandmarkID++;
 			}

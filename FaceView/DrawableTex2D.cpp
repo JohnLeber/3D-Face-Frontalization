@@ -1,5 +1,10 @@
 #include "pch.h"
 #include "DrawableTex2D.h"
+
+//=============================================================================
+// DrawableTex2D.cpp by Frank Luna (C) 2005 All Rights Reserved.
+//=============================================================================
+
 //------------------------------------------------------------------------------//
 DrawableTex2D::DrawableTex2D(UINT width, UINT height, UINT mipLevels,
 	D3DFORMAT texFormat, bool useDepthBuffer,

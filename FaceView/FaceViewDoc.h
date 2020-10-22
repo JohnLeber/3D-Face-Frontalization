@@ -44,6 +44,9 @@ public:
 	float m_nLeftEyeY;
 	float m_nRightEyeX;
 	float m_nRightEyeY;
+
+	float m_nNoseX;
+	float m_nNoseY; 
 protected:
 
 // Generated message map functions
