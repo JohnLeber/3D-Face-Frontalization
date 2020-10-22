@@ -2,4 +2,9 @@
 
 **Introduction**
 
-![Test Image 4](https://github.com/nodecomplete/faceview/ScreenShot.jpg 676)
+![alt text](https://github.com/nodecomplete/FaceView/blob/master/FaceView/ScreenShot.jpg)
+
+**Credits**
+
+
+ 
