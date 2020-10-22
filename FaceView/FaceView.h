@@ -25,9 +25,11 @@ public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
 	virtual BOOL OnIdle(LONG lCount);
+	void OnFileOpen();
 // Implementation
 	afx_msg void OnAppAbout();
 	DECLARE_MESSAGE_MAP()
+	virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName);
 };
 
 extern CFaceViewApp theApp;

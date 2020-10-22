@@ -21,9 +21,8 @@
 
 BEGIN_MESSAGE_MAP(CFaceViewApp, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, &CFaceViewApp::OnAppAbout)
-	// Standard file based document commands
-	ON_COMMAND(ID_FILE_NEW, &CWinApp::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, &CWinApp::OnFileOpen)
+	// Standard file based document commands 
+	ON_COMMAND(ID_FILE_OPEN, &CFaceViewApp::OnFileOpen)
 	// Standard print setup command
 	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinApp::OnFilePrintSetup)
 END_MESSAGE_MAP()
@@ -208,7 +207,20 @@ void CFaceViewApp::OnAppAbout()
 	aboutDlg.DoModal();
 }
 
-// CFaceViewApp message handlers
+// CFaceViewApp message handlers 
+void CFaceViewApp::OnFileOpen()
+{
+	TCHAR szFilters[] = _T("OBJ MESH Files (*.mesh)|*.mesh|All Files (*.*)|*.*||"); 
+	CFileDialog d(TRUE, _T("mesh"), _T("*.mesh"), OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, szFilters, AfxGetMainWnd());
+	if (d.DoModal() != IDOK) return;
+	CString cstrFileOpen = d.GetPathName();
+	 
+	// Call CImageEngDoc :: OnOpenDocument() automatically
+	OpenDocumentFile(cstrFileOpen);
+}
 
-
-
+CDocument* CFaceViewApp::OpenDocumentFile(LPCTSTR lpszFileName)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	return CWinApp::OpenDocumentFile(lpszFileName);
+}
