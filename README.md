@@ -11,7 +11,5 @@ To use the software, open a .mesh file from the sample data folder.
 ![alt text](https://github.com/nodecomplete/FaceView/blob/master/FaceView/ScreenShot.jpg)
 
 
-**Credits**
-
 
  
