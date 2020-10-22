@@ -7,6 +7,8 @@ DirectX based tool for viewing output files from Microsofts Deep-3D-Face-Reconst
 To compile the software use VS 2019 with MFC enabled, and the June 2010 DirectX SDK.
 To use the software, open a .mesh file from the sample data folder.
 
+The tool was written to explore the possibility using computer vision techniques to assist in testing vision impairment in young children. Certain eyes tests are made difficult with children who are too young to keep their face calibrated with the testing equipment. The problem may be assisted by dynamically creating a 3D model of their face and rotating that towards the camera. 
+
 
 
 
