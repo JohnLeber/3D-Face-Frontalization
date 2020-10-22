@@ -161,7 +161,7 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		return FALSE;
 
 	CString strObjFile = lpszPathName;
-	if (strObjFile.Right(4) != L".obj")
+	if (strObjFile.Right(4) != L".obj" && strObjFile.Right(5) != L".mesh")
 	{
 		AfxMessageBox(L"Not and OBJ file");
 		return FALSE;
@@ -186,7 +186,7 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	}
 	{
 		CString strTextureFile = strObjFile;
-		strTextureFile.Replace(L"_mesh.obj", L".jpg");
+		strTextureFile.Replace(L"_mesh.mesh", L".jpg");
 		hr = D3DXCreateTextureFromFile(gd3dDevice, strTextureFile, &m_pTexture);
 		if (FAILED(hr))
 		{
@@ -197,7 +197,7 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	CHAR buffer[LINE_BUFF_SIZE];
 	{
 		CString strLandmarkFile = strObjFile;
-		strLandmarkFile.Replace(L"_mesh.obj", L"_landmarks.txt");
+		strLandmarkFile.Replace(L"_mesh.mesh", L"_landmarks.txt");
 		FILE* pFile = 0;
 		errno_t ret = _tfopen_s(&pFile, strLandmarkFile, TEXT("r"));
 		if (ret == 0)

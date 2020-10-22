@@ -37,7 +37,10 @@ bool CEffects::Initialize()
 		strFileName = CString(szFilePath);
 		long nRight = strFileName.ReverseFind(_T('\\'));
 		strFileName = strFileName.Left(nRight);
-		strFileName.Append(_T("\\FaceView.fx"));
+		//if running otuside of VS, the next few lines will need to change.
+		strFileName.Replace(L"\\Debug", L"");
+		strFileName.Replace(L"\\Release", L"");
+		strFileName.Append(_T("\\FaceView\\FaceView.fx"));
 	}
 
 	LPD3DXBUFFER pErrors = NULL;
