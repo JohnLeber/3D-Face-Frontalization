@@ -3,7 +3,7 @@
 // Simple fx file to render obj files.
 // code-section.com
 
-static const float SHADOW_EPSILON = 0.00005f;
+static const float SHADOW_EPSILON = 0.000005f;
 static const float SMAP_SIZE = 4096;
 
 float4x4 mWorld	: World;

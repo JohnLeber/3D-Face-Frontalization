@@ -661,6 +661,7 @@ HRESULT CFaceViewView::DrawTexturedQuad(LPDIRECT3DDEVICE9 pDevice,
 		hr = m_pEffects->m_pFX->EndPass();
 	}
 	hr = m_pEffects->m_pFX->End();
+	pVBCenter->Release();
 	//pDevice->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
 	//return pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(quad[0]));
 	return hr;
