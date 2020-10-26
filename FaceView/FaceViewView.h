@@ -59,6 +59,7 @@ protected:
 	D3DXMATRIX m_World, m_WVP, m_WI, m_WIT, m_View, m_Proj;
 	D3DFILLMODE m_Fillmode;
 	bool m_bSetTextureMode, m_bRotate, m_bFaceCameraMode;
+	void RotateTowardsCamera(D3DXVECTOR3 lightPosW, float nNear, float nFar, float& nRotationY, float& nRotationZ);
 	CEffects* m_pEffects;
 	DrawableTex2D* m_pDepthMap;
 	HRESULT DrawTexturedQuad(LPDIRECT3DDEVICE9 pDevice,

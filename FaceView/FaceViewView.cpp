@@ -257,9 +257,9 @@ void CFaceViewView::Render()
 	//This corresponds to the 'camera' referred to in the Microsoft Deep3DFaceReconstruction github project that has a FOV of 12.59 at is located 10 m in front of the face mesh.
 	//It is analgous to a light source when calculating the shadow map (for example), but it isn't really a light source.
 	D3DXVECTOR3 lightPosW(0, 0, 10);
-	D3DXMATRIX mLightWVP;
-	float m_nNearPlane = 1.0f;
-	float m_nFarPlane = 50.0f;
+	D3DXMATRIX lightWVP;
+	float nNearPlane = 1.0f;
+	float nFarPlane = 50.0f;
 	float nfFOV = static_cast<float>(2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);
 	if (gd3dDevice)
 	{
@@ -282,15 +282,15 @@ void CFaceViewView::Render()
 			D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &UpW);
 			D3DXMATRIX lightLens;
 			float LightFOV = static_cast<float>(2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);//12.59 - see MS Deep3D project
-			D3DXMatrixPerspectiveFovLH(&lightLens, LightFOV, 1, m_nNearPlane, m_nFarPlane);//used to be 100
-			mLightWVP = lightView * lightLens;
+			D3DXMatrixPerspectiveFovLH(&lightLens, LightFOV, 1, nNearPlane, nFarPlane);//used to be 100
+			lightWVP = lightView * lightLens;
 			UINT numPasses = 0;
 			hr = m_pEffects->m_pFX->Begin(&numPasses, 0);
 			hr = m_pEffects->m_pFX->BeginPass(0);
 			hr = m_pEffects->m_pFX->SetTexture(m_pEffects->m_hShadowMap, m_pDepthMap->d3dTex());
 			hr = m_pEffects->m_pFX->SetFloatArray("vEye", &lightPosW.x, 3);
-			hr = m_pEffects->m_pFX->SetValue(m_pEffects->m_hFarPlane, &m_nFarPlane, sizeof(float));
-			hr = m_pEffects->m_pFX->SetMatrix(m_pEffects->m_hLightWVP, &(mLightWVP));
+			hr = m_pEffects->m_pFX->SetValue(m_pEffects->m_hFarPlane, &nFarPlane, sizeof(float));
+			hr = m_pEffects->m_pFX->SetMatrix(m_pEffects->m_hLightWVP, &(lightWVP));
 			hr = m_pEffects->m_pFX->CommitChanges();
 			//draw the mesh
 			hr = pDoc->m_pFaceMesh->DrawSubset(0);
@@ -344,86 +344,7 @@ void CFaceViewView::Render()
 				}
 				else if (m_bFaceCameraMode)
 				{
-					//rotate mesh so that the face is alignbed with the X/Y plane
-					D3DXMATRIX lightView;
-					D3DXMATRIX lightLens;
-					D3DXVECTOR3 UpW(0.0f, 1.0f, 0.0f);
-					D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &UpW);
-					float ProjFOV = static_cast<float>(2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);//FOV used from creating the mesh/texture in the MS Deep3DFaceReconstruction.
-					D3DXMatrixPerspectiveFovLH(&lightLens, ProjFOV, 1, m_nNearPlane, m_nFarPlane);
-					FLOAT nLeftX = 0;
-					FLOAT nLeftY = 0;
-					FLOAT nLeftZ = 0;
-					FLOAT nRightX = 0;
-					FLOAT nRightY = 0;
-					FLOAT nRightZ = 0;
-					float nEyeX = pDoc->m_nLeftEyeX / gTextureDim;
-					float nEyeY = pDoc->m_nLeftEyeY / gTextureDim;
-					//project landmark values for left/right eye from cropped (224 x 224) 2D texture space to 3D world space
-					if (CalcMarkerPos(nEyeX, nEyeY, lightView, lightLens, nLeftX, nLeftY, nLeftZ))
-					{
-						nEyeX = pDoc->m_nRightEyeX / gTextureDim;
-						nEyeY = pDoc->m_nRightEyeY / gTextureDim;
-						if (CalcMarkerPos(nEyeX, nEyeY, lightView, lightLens, nRightX, nRightY, nRightZ))
-						{
-							//found XYZ coord of both left and right eye
-							//Use these to work out what the rotation should be such that both eyes are aligned to the view plane.
-							//Y is Up, so find angles on the X/Z plane.
-							float nLeftHypot = static_cast<float>(_hypot(nLeftX, nLeftZ));
-							float nRightHypot = static_cast<float>(_hypot(nRightX, nRightZ));
-							float nLeftAngle = static_cast<float>(atan2(nLeftZ , nLeftX));
-							float nRightAngle = static_cast<float>(atan2(nRightZ, nRightX));
-							float nCenterAngle = (nRightAngle + nLeftAngle) / 2;
-							float nLeftAngleDegrees = nLeftAngle / D3DX_PI * 180;
-							float nRightAngleDegrees = nRightAngle / D3DX_PI * 180;
-							float nCenterAngleDegrees = nCenterAngle / D3DX_PI * 180;
-							//float nRotationDegrees = nRotationY / 3.D3DX_PI * 180;
-							//We use a numerical approach to find an angle where the Z value on both eyes are closest (rather than try and documenta an analytical approach)
-							//We do a sweep from -90 degree of the current angle to +90 degrees and take the angle with the two new points arethe same
-							float nSmallest = -1;
-							float nSmallestRad = 0;
-							for (int h = 0; h < 180; h++)
-							{ 
-								float nRad = (h - 90) * D3DX_PI / 180.0f;
-								float nNewLeftZ = static_cast<float>(nLeftHypot * sin(nRad + nLeftAngle));
-								float nNewRightZ = static_cast<float>(nRightHypot * sin(nRad + nRightAngle));
-								float nDiff = abs(nNewLeftZ - nNewRightZ);
-								if (nDiff < nSmallest || nSmallest < 0)
-								{
-									nSmallest = nDiff;
-									nSmallestRad = nRad;
-								}
-							}
-							if (nSmallest > 0)
-							{
-								nRotationY = nRotationY - nSmallestRad;
-							}
-							//do the same but this timne around the Z axis
-							nRotationZ = 0;
-							nLeftHypot = static_cast<float>(_hypot(nLeftX, nLeftY));
-							nRightHypot = static_cast<float>(_hypot(nRightX, nRightY));
-							nLeftAngle = static_cast<float>(atan2(nLeftY, nLeftX));
-							nRightAngle = static_cast<float>(atan2(nRightY, nRightX));
-							nSmallest = -1;
-							nSmallestRad = 0;
-							for (int h = 0; h < 180; h++)
-							{
-								float nRad = (h - 90) * D3DX_PI / 180.0f;
-								float nNewLeftY = static_cast<float>(nLeftHypot * sin(nRad + nLeftAngle));
-								float nNewRightY = static_cast<float>(nRightHypot * sin(nRad + nRightAngle));
-								float nDiff = abs(nNewLeftY - nNewRightY);
-								if (nDiff < nSmallest || nSmallest < 0)
-								{
-									nSmallest = nDiff;
-									nSmallestRad = nRad;
-								}
-							}
-							if (nSmallest > 0)
-							{
-								nRotationZ = nRotationZ + nSmallestRad;
-							}
-						}
-					}
+					RotateTowardsCamera(lightPosW, nNearPlane, nFarPlane, nRotationY, nRotationZ);					 
 				}
 				
 				D3DXMatrixRotationYawPitchRoll(&Rotation, nRotationY, 0, nRotationZ);
@@ -439,7 +360,7 @@ void CFaceViewView::Render()
 				hr = m_pEffects->m_pFX->SetTechnique(m_pEffects->m_hProjTech);
 				
 				D3DXMatrixLookAtLH(&m_View, &vEye, &(D3DXVECTOR3(0, 0, 0)), &(D3DXVECTOR3(0, 1, 0)));
-				D3DXMatrixPerspectiveFovLH(&m_Proj, nRenderFOV, 1, m_nNearPlane, m_nFarPlane);
+				D3DXMatrixPerspectiveFovLH(&m_Proj, nRenderFOV, 1, nNearPlane, nFarPlane);
 				m_WVP = m_World * m_View * m_Proj;
 				D3DXMatrixInverse(&m_WI, NULL, &m_World);
 				D3DXMatrixTranspose(&m_WIT, &m_WI);
@@ -459,10 +380,10 @@ void CFaceViewView::Render()
 					{
 						D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &UpW);
 						float ProjFOV = static_cast<float>((float)2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);
-						D3DXMatrixPerspectiveFovLH(&lightLens, ProjFOV, 1, m_nNearPlane, m_nFarPlane);//used to be 100
-						m_pEffects->m_pFX->SetMatrix(m_pEffects->m_hLightWVP, &(mLightWVP));
+						D3DXMatrixPerspectiveFovLH(&lightLens, ProjFOV, 1, nNearPlane, nFarPlane);//used to be 100
+						m_pEffects->m_pFX->SetMatrix(m_pEffects->m_hLightWVP, &(lightWVP));
 					}
-					m_pEffects->m_pFX->SetValue(m_pEffects->m_hFarPlane, &m_nFarPlane, sizeof(float));
+					m_pEffects->m_pFX->SetValue(m_pEffects->m_hFarPlane, &nFarPlane, sizeof(float));
 					m_pEffects->m_pFX->SetFloatArray("vEye", &vEye.x, 3);
 					m_pEffects->m_pFX->CommitChanges();
 
@@ -503,6 +424,95 @@ void CFaceViewView::Render()
 		// Also note that we use the swap chain's present method.
 		hr = m_SwapChain->Present(0, 0, GetSafeHwnd(), 0, 0);
 		gd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	}
+}
+//--------------------------------------------------------------------------------------------------//
+void CFaceViewView::RotateTowardsCamera(D3DXVECTOR3 lightPosW, float nNear, float nFar, float& nRotationY, float& nRotationZ)
+{
+	CFaceViewDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc) {
+		return;
+	}
+	//rotate mesh so that the face is alignbed with the X/Y plane
+	D3DXMATRIX lightView;
+	D3DXMATRIX lightLens;
+	D3DXVECTOR3 UpW(0.0f, 1.0f, 0.0f);
+	D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &UpW);
+	float ProjFOV = static_cast<float>(2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);//FOV used from creating the mesh/texture in the MS Deep3DFaceReconstruction.
+	D3DXMatrixPerspectiveFovLH(&lightLens, ProjFOV, 1, nNear, nFar);
+	FLOAT nLeftX = 0;
+	FLOAT nLeftY = 0;
+	FLOAT nLeftZ = 0;
+	FLOAT nRightX = 0;
+	FLOAT nRightY = 0;
+	FLOAT nRightZ = 0;
+	float nEyeX = pDoc->m_nLeftEyeX / gTextureDim;
+	float nEyeY = pDoc->m_nLeftEyeY / gTextureDim;
+	//project landmark values for left/right eye from cropped (224 x 224) 2D texture space to 3D world space
+	if (CalcMarkerPos(nEyeX, nEyeY, lightView, lightLens, nLeftX, nLeftY, nLeftZ))
+	{
+		nEyeX = pDoc->m_nRightEyeX / gTextureDim;
+		nEyeY = pDoc->m_nRightEyeY / gTextureDim;
+		if (CalcMarkerPos(nEyeX, nEyeY, lightView, lightLens, nRightX, nRightY, nRightZ))
+		{
+			//found XYZ coord of both left and right eye
+			//Use these to work out what the rotation should be such that both eyes are aligned to the view plane.
+			//Y is Up, so find angles on the X/Z plane.
+			float nLeftHypot = static_cast<float>(_hypot(nLeftX, nLeftZ));
+			float nRightHypot = static_cast<float>(_hypot(nRightX, nRightZ));
+			float nLeftAngle = static_cast<float>(atan2(nLeftZ, nLeftX));
+			float nRightAngle = static_cast<float>(atan2(nRightZ, nRightX));
+			float nCenterAngle = (nRightAngle + nLeftAngle) / 2;
+			float nLeftAngleDegrees = nLeftAngle / D3DX_PI * 180;
+			float nRightAngleDegrees = nRightAngle / D3DX_PI * 180;
+			float nCenterAngleDegrees = nCenterAngle / D3DX_PI * 180;
+			//float nRotationDegrees = nRotationY / 3.D3DX_PI * 180;
+			//We use a numerical approach to find an angle where the Z value on both eyes are closest (rather than try and documenta an analytical approach)
+			//We do a sweep from -90 degree of the current angle to +90 degrees and take the angle with the two new points arethe same
+			float nSmallest = -1;
+			float nSmallestRad = 0;
+			for (int h = 0; h < 180; h++)
+			{
+				float nRad = (h - 90) * D3DX_PI / 180.0f;
+				float nNewLeftZ = static_cast<float>(nLeftHypot * sin(nRad + nLeftAngle));
+				float nNewRightZ = static_cast<float>(nRightHypot * sin(nRad + nRightAngle));
+				float nDiff = abs(nNewLeftZ - nNewRightZ);
+				if (nDiff < nSmallest || nSmallest < 0)
+				{
+					nSmallest = nDiff;
+					nSmallestRad = nRad;
+				}
+			}
+			if (nSmallest > 0)
+			{
+				nRotationY = nRotationY - nSmallestRad;
+			}
+			//do the same but this timne around the Z axis
+			nRotationZ = 0;
+			nLeftHypot = static_cast<float>(_hypot(nLeftX, nLeftY));
+			nRightHypot = static_cast<float>(_hypot(nRightX, nRightY));
+			nLeftAngle = static_cast<float>(atan2(nLeftY, nLeftX));
+			nRightAngle = static_cast<float>(atan2(nRightY, nRightX));
+			nSmallest = -1;
+			nSmallestRad = 0;
+			for (int h = 0; h < 180; h++)
+			{
+				float nRad = (h - 90) * D3DX_PI / 180.0f;
+				float nNewLeftY = static_cast<float>(nLeftHypot * sin(nRad + nLeftAngle));
+				float nNewRightY = static_cast<float>(nRightHypot * sin(nRad + nRightAngle));
+				float nDiff = abs(nNewLeftY - nNewRightY);
+				if (nDiff < nSmallest || nSmallest < 0)
+				{
+					nSmallest = nDiff;
+					nSmallestRad = nRad;
+				}
+			}
+			if (nSmallest > 0)
+			{
+				nRotationZ = nRotationZ + nSmallestRad;
+			}
+		}
 	}
 }
 //--------------------------------------------------------------------------------------------------//
