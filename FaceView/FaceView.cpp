@@ -186,11 +186,11 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 };
-
+//-------------------------------------------------------------//
 CAboutDlg::CAboutDlg() noexcept : CDialogEx(IDD_ABOUTBOX)
 {
 }
-
+//-------------------------------------------------------------//
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
@@ -198,14 +198,14 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
-
+//-------------------------------------------------------------//
 // App command to run the dialog
 void CFaceViewApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
 }
-
+//-------------------------------------------------------------//
 // CFaceViewApp message handlers 
 void CFaceViewApp::OnFileOpen()
 {
@@ -217,7 +217,7 @@ void CFaceViewApp::OnFileOpen()
 	// Call CImageEngDoc :: OnOpenDocument() automatically
 	OpenDocumentFile(cstrFileOpen);
 }
-
+//-------------------------------------------------------------//
 CDocument* CFaceViewApp::OpenDocumentFile(LPCTSTR lpszFileName)
 {
 	// TODO: Add your specialized code here and/or call the base class

@@ -53,11 +53,11 @@ public:
 #endif
 
 protected:
-	IDirect3DSwapChain9* mSwapChain;
-	IDirect3DSurface9* mDepthStencil;
-	D3DPRESENT_PARAMETERS md3dPP;
-	D3DXMATRIX mWorld, mWVP, mWI, mWIT, mView, mProj;
-	D3DFILLMODE mFillmode;
+	IDirect3DSwapChain9* m_SwapChain;
+	IDirect3DSurface9* m_DepthStencil;
+	D3DPRESENT_PARAMETERS m_d3dPP;
+	D3DXMATRIX m_World, m_WVP, m_WI, m_WIT, m_View, m_Proj;
+	D3DFILLMODE m_Fillmode;
 	bool m_bSetTextureMode, m_bRotate, m_bFaceCameraMode;
 	CEffects* m_pEffects;
 	DrawableTex2D* m_pDepthMap;

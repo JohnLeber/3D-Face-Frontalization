@@ -19,6 +19,7 @@ IDirect3DDevice9* gd3dDevice = 0;
 IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 //-------------------------------------------------------------//
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
+	ON_WM_DROPFILES()
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
@@ -33,17 +34,21 @@ static UINT indicators[] =
 //-------------------------------------------------------------//
 // CMainFrame construction/destruction
 CMainFrame::CMainFrame() : m_bSplitterCreated(false)
-{
- 
-	md3dObject = 0;
-	mView[0] = mView[1] = mView[2] = mView[3] = 0;
+{ 
+	m_d3dObject = 0;
+	m_pView[0] = m_pView[1] = m_pView[2] = m_pView[3] = 0;
 }
 //-------------------------------------------------------------//
 CMainFrame::~CMainFrame()
 { 
-	if (md3dObject)
+	if (m_pEffects)
 	{
-		md3dObject->Release();
+		delete m_pEffects;
+		m_pEffects = 0;
+	}
+	if (m_d3dObject)
+	{
+		m_d3dObject->Release();
 	}
 	if (gd3dDevice)
 	{
@@ -98,10 +103,10 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT /*lpcs*/,
 		return FALSE;
 
 	// Save pointers to the views (the returned pane is usually a CView-derived class).
-	mView[1] = (CFaceViewView*)m_wndSplitter.GetPane(0, 0);
-	mView[0] = (CFaceViewView*)m_wndSplitter.GetPane(0, 1);
-	mView[2] = (CFaceViewView*)m_wndSplitter.GetPane(1, 0);
-	mView[3] = (CFaceViewView*)m_wndSplitter.GetPane(1, 1);
+	m_pView[1] = (CFaceViewView*)m_wndSplitter.GetPane(0, 0);
+	m_pView[0] = (CFaceViewView*)m_wndSplitter.GetPane(0, 1);
+	m_pView[2] = (CFaceViewView*)m_wndSplitter.GetPane(1, 0);
+	m_pView[3] = (CFaceViewView*)m_wndSplitter.GetPane(1, 1);
 
 	return TRUE;
 }
@@ -137,8 +142,8 @@ bool CMainFrame::initD3D()
 {
 	// Step 1: Create the IDirect3D9 object.
 
-	md3dObject = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!md3dObject)
+	m_d3dObject = Direct3DCreate9(D3D_SDK_VERSION);
+	if (!m_d3dObject)
 	{
 		TRACE0("Direct3DCreate9 FAILED");
 		return false;
@@ -148,13 +153,13 @@ bool CMainFrame::initD3D()
 	// Step 2: Verify hardware support for specified formats in windowed mode.
 
 	D3DDISPLAYMODE mode;
-	md3dObject->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &mode);
-	HRESULT hr = md3dObject->CheckDeviceType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, mode.Format, mode.Format, true);
+	m_d3dObject->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &mode);
+	HRESULT hr = m_d3dObject->CheckDeviceType(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, mode.Format, mode.Format, true);
 
 	// Step 3: Check for hardware vertex processing.
 
 	D3DCAPS9 caps;
-	hr = md3dObject->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
+	hr = m_d3dObject->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
 
 	DWORD devBehaviorFlags = 0;
 	if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
@@ -167,30 +172,30 @@ bool CMainFrame::initD3D()
 	// use the device's implicit swap chain; instead, we create a separate
 	// swap chain for each of the four view windows we create.  
 
-	md3dPP.BackBufferWidth = 1;
-	md3dPP.BackBufferHeight = 1;
-	md3dPP.BackBufferFormat = D3DFMT_UNKNOWN;
-	md3dPP.BackBufferCount = 1;
-	md3dPP.MultiSampleType = D3DMULTISAMPLE_NONE;
-	md3dPP.MultiSampleQuality = 0;
-	md3dPP.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	md3dPP.hDeviceWindow = 0;
-	md3dPP.Windowed = true;
-	md3dPP.EnableAutoDepthStencil = true;
-	md3dPP.AutoDepthStencilFormat = D3DFMT_D16;// D3DFMT_UNKNOWN;
-	md3dPP.Flags = 0;
-	md3dPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	md3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	m_d3dPP.BackBufferWidth = 1;
+	m_d3dPP.BackBufferHeight = 1;
+	m_d3dPP.BackBufferFormat = D3DFMT_UNKNOWN;
+	m_d3dPP.BackBufferCount = 1;
+	m_d3dPP.MultiSampleType = D3DMULTISAMPLE_NONE;
+	m_d3dPP.MultiSampleQuality = 0;
+	m_d3dPP.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	m_d3dPP.hDeviceWindow = 0;
+	m_d3dPP.Windowed = true;
+	m_d3dPP.EnableAutoDepthStencil = true;
+	m_d3dPP.AutoDepthStencilFormat = D3DFMT_D16;// D3DFMT_UNKNOWN;
+	m_d3dPP.Flags = 0;
+	m_d3dPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+	m_d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
 
 	// Step 5: Create the device.
 
-	hr = md3dObject->CreateDevice(
+	hr = m_d3dObject->CreateDevice(
 		D3DADAPTER_DEFAULT,    // primary adapter
 		D3DDEVTYPE_HAL,        // device type
 		GetSafeHwnd(),         // window associated with device
 		devBehaviorFlags,      // vertex processing
-		&md3dPP,               // present parameters
+		&m_d3dPP,               // present parameters
 		&gd3dDevice);         // return created device
 
 
@@ -208,28 +213,44 @@ bool CMainFrame::initD3D()
 	m_pEffects = new CEffects();
 	m_pEffects->Initialize();
 
-	mView[0]->Init(m_pEffects, D3DFILL_SOLID);
-	
-	mView[1]->Init(m_pEffects, D3DFILL_SOLID);
-	mView[1]->SetTextureMode();
-	mView[2]->Init(m_pEffects, D3DFILL_SOLID);
-	mView[2]->SetRotationMode();
-	mView[3]->Init(m_pEffects, D3DFILL_SOLID);
-	mView[3]->SetFaceCameraMode();
+	m_pView[0]->Init(m_pEffects, D3DFILL_SOLID); 
+	m_pView[1]->Init(m_pEffects, D3DFILL_SOLID);
+	m_pView[1]->SetTextureMode();
+	m_pView[2]->Init(m_pEffects, D3DFILL_SOLID);
+	m_pView[2]->SetRotationMode();
+	m_pView[3]->Init(m_pEffects, D3DFILL_SOLID);
+	m_pView[3]->SetFaceCameraMode();
 	// Step 7: For an SDI application, there is only one document object, so
 	// get a pointer to it and initialize D3D objects.  (I.e., create meshes,
 	// and textures, etc.)
 	((CFaceViewDoc*)GetActiveDocument())->InitD3DObjects();
-
+	DragAcceptFiles(TRUE);
 	return true;
+}
+//-------------------------------------------------------------//
+void CMainFrame::OnDropFiles(HDROP hDropInfo)
+{
+	WCHAR szDroppedFile[MAX_PATH];
+	long nNumFiles = DragQueryFile(hDropInfo,
+		0xFFFFFFFF,
+		szDroppedFile,
+		MAX_PATH);
+	if (nNumFiles == 1)
+	{
+		if (DragQueryFile(hDropInfo, 0, szDroppedFile, MAX_PATH) != 0)
+		{
+			CWinApp* pWinApp = AfxGetApp();
+			pWinApp->OpenDocumentFile(szDroppedFile);
+		}
+	}
 }
 //-------------------------------------------------------------//
 void CMainFrame::Render()
 {
-	if (mView[0]) mView[0]->Render();
-	if (mView[1]) mView[1]->Render();
-	if (mView[2]) mView[2]->Render();
-	if (mView[3]) mView[3]->Render();
+	if (m_pView[0]) m_pView[0]->Render();
+	if (m_pView[1]) m_pView[1]->Render();
+	if (m_pView[2]) m_pView[2]->Render();
+	if (m_pView[3]) m_pView[3]->Render();
 }
 //-------------------------------------------------------------//
 void CMainFrame::OnSize(UINT nType, int cx, int cy)

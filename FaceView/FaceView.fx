@@ -3,7 +3,7 @@
 // Simple fx file to render obj files.
 // code-section.com
 
-static const float SHADOW_EPSILON = 0.000005f;
+static const float SHADOW_EPSILON = 0.00005f;
 static const float SMAP_SIZE = 4096;
 
 float4x4 mWorld	: World;
@@ -11,9 +11,7 @@ float4x4 mWVP	: WorldViewProjection;
 float4x4 mWIT	: WorldInverseTranspose;
 float3 vEye;
 
-uniform extern float  gFarPlane;
- 
-
+uniform extern float  gFarPlane;  
 uniform extern float gBlend = 1;
 uniform extern float4x4 gWorld;
 uniform extern float4x4 gWorldInvTrans; 
@@ -36,7 +34,7 @@ float4 sceneAmbient = { 0.15f, 0.15f, 0.15f, 1.f };
 float4 diffuseColor = { 0.65f, 0.65f, 0.7f, 1.f };
 texture texDiffuse;
 sampler tsDiffuse = sampler_state { Texture = (texDiffuse); MipFilter = LINEAR; MinFilter = LINEAR; MagFilter = LINEAR; };
-bool useDiffuseTexture = false;
+ 
 
 
 // Specular options.

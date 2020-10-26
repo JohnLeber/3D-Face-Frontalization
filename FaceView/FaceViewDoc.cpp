@@ -148,13 +148,13 @@ void CFaceViewDoc::Dump(CDumpContext& dc) const
 }
 #endif //_DEBUG
 
-
+//-------------------------------------------------------------//
 // CFaceViewDoc commands
 void CFaceViewDoc::InitD3DObjects()
 {
 	//HRESULT hr = D3DXCreateTeapot(gd3dDevice, &mTeapot, 0);
 }
-
+//-------------------------------------------------------------//
 BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
 	if (!CDocument::OnOpenDocument(lpszPathName))
@@ -163,7 +163,7 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	CString strObjFile = lpszPathName;
 	if (strObjFile.Right(4) != L".obj" && strObjFile.Right(5) != L".mesh")
 	{
-		AfxMessageBox(L"Not and OBJ file");
+		AfxMessageBox(L"Not and mesh file");
 		return FALSE;
 	}
 	if (m_pEyeMesh)
@@ -171,7 +171,7 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		m_pEyeMesh->Release();
 		m_pEyeMesh = 0;
 	}
-	HRESULT hr = D3DXCreateBox(gd3dDevice, 0.005, 0.005, 0.005, &m_pEyeMesh, NULL);
+	HRESULT hr = D3DXCreateBox(gd3dDevice, 0.005f, 0.005f, 0.005f, &m_pEyeMesh, NULL);
 
 	m_nLeftEyeX = 0;
 	m_nLeftEyeY = 0;
@@ -189,6 +189,7 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	{
 		CString strTextureFile = strObjFile;
 		strTextureFile.Replace(L"_mesh.mesh", L".jpg");
+
 		hr = D3DXCreateTextureFromFile(gd3dDevice, strTextureFile, &m_pTexture);
 		if (FAILED(hr))
 		{
@@ -352,8 +353,7 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	} 
 	return TRUE;
 }
- 
-
+//-------------------------------------------------------------//
 void CFaceViewDoc::OnCloseDocument()
 {
 	// TODO: Add your specialized code here and/or call the base class

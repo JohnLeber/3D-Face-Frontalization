@@ -19,57 +19,54 @@
 #define new DEBUG_NEW
 #endif 
 
+const float gTextureDim = 224.0f;//The Microsoft Deep3DFaceReconstruction project outputs a cropped image as 224 by 224 (as part of the CNN output)
 
+ 
 // CFaceViewView
 
 IMPLEMENT_DYNCREATE(CFaceViewView, CView)
 
 BEGIN_MESSAGE_MAP(CFaceViewView, CView)
-	// Standard printing commands
-	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
-
+//--------------------------------------------------------------------------------------------------//
 // CFaceViewView construction/destruction
-
-CFaceViewView::CFaceViewView() : mSwapChain(0), mDepthStencil(0)
+CFaceViewView::CFaceViewView() : m_SwapChain(0), m_DepthStencil(0)
 {
 	m_pEffects = 0;
  
-	md3dPP.BackBufferWidth = 0;
-	md3dPP.BackBufferHeight = 0;
-	md3dPP.BackBufferFormat = D3DFMT_UNKNOWN;
-	md3dPP.BackBufferCount = 1;
-	md3dPP.MultiSampleType = D3DMULTISAMPLE_NONE;
-	md3dPP.MultiSampleQuality = 0;
-	md3dPP.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	md3dPP.hDeviceWindow = GetSafeHwnd();
-	md3dPP.Windowed = true;
-	md3dPP.EnableAutoDepthStencil = true;
-	md3dPP.AutoDepthStencilFormat = D3DFMT_D16;// D3DFMT_D24S8;
-	md3dPP.Flags = 0;
-	md3dPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	md3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	m_d3dPP.BackBufferWidth = 0;
+	m_d3dPP.BackBufferHeight = 0;
+	m_d3dPP.BackBufferFormat = D3DFMT_UNKNOWN;
+	m_d3dPP.BackBufferCount = 1;
+	m_d3dPP.MultiSampleType = D3DMULTISAMPLE_NONE;
+	m_d3dPP.MultiSampleQuality = 0;
+	m_d3dPP.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	m_d3dPP.hDeviceWindow = GetSafeHwnd();
+	m_d3dPP.Windowed = true;
+	m_d3dPP.EnableAutoDepthStencil = true;
+	m_d3dPP.AutoDepthStencilFormat = D3DFMT_D16;// D3DFMT_D24S8;
+	m_d3dPP.Flags = 0;
+	m_d3dPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+	m_d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	m_bSetTextureMode = false;
 	m_bRotate = false;
 	m_bFaceCameraMode = false;
 	m_pDepthMap = 0;
 }
-
+//--------------------------------------------------------------------------------------------------//
 CFaceViewView::~CFaceViewView()
 {
-	ReleaseCOM(mSwapChain);
-	ReleaseCOM(mDepthStencil);
+	ReleaseCOM(m_SwapChain);
+	ReleaseCOM(m_DepthStencil);
 	if (m_pDepthMap)
 	{
 		delete m_pDepthMap;
 		m_pDepthMap = 0;
 	}
 }
-
+//--------------------------------------------------------------------------------------------------//
 BOOL CFaceViewView::PreCreateWindow(CREATESTRUCT& cs)
 {
 	// TODO: Modify the Window class or styles here by modifying
@@ -77,27 +74,28 @@ BOOL CFaceViewView::PreCreateWindow(CREATESTRUCT& cs)
 
 	return CView::PreCreateWindow(cs);
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::SetTextureMode()
 {
 	m_bSetTextureMode = true;
 	m_bFaceCameraMode = false;
 	m_bRotate = false;
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::SetRotationMode()
 {
 	m_bRotate = true;
 	m_bFaceCameraMode = false;
 	m_bSetTextureMode = false;
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::SetFaceCameraMode()
 {
 	m_bFaceCameraMode = true;
 	m_bSetTextureMode = false;
 	m_bRotate = false;
 }
+//--------------------------------------------------------------------------------------------------//
 // CFaceViewView drawing
 LONG CFaceViewView::GetDisplayWidth()
 {
@@ -105,14 +103,14 @@ LONG CFaceViewView::GetDisplayWidth()
 	GetClientRect(rtClient);
 	return rtClient.Width();
 }
-
+//--------------------------------------------------------------------------------------------------//
 LONG CFaceViewView::GetDisplayHeight()
 {
 	CRect rtClient;
 	GetClientRect(rtClient);
 	return rtClient.Height();
 }
-
+//--------------------------------------------------------------------------------------------------//
 bool CFaceViewView::CalcMarkerPos(float nEyeX, float nEyeY, D3DXMATRIX lightView, D3DXMATRIX lightLens, FLOAT& X, FLOAT& Y, FLOAT& Z)
 {
 	CRect R;
@@ -125,15 +123,15 @@ bool CFaceViewView::CalcMarkerPos(float nEyeX, float nEyeY, D3DXMATRIX lightView
 	}
 
 	{
-		float w = R.Width();
-		float h = R.Height();
+		float w = (float)R.Width();
+		float h = (float)R.Height();
 
 		D3DXVECTOR3 originW(0.0f, 0.0f, 0.0f);
 		D3DXVECTOR3 dirW(0.0f, 0.0f, 0.0f);
 
 		POINT s;
-		s.x = nEyeX * w;
-		s.y = nEyeY * h;
+		s.x = static_cast<LONG>(nEyeX * w);
+		s.y = static_cast<LONG>(nEyeY * h);
 		D3DXMATRIX proj = lightLens;
 
 		float x = (2.0f * s.x / w - 1.0f) / proj(0, 0);
@@ -164,13 +162,12 @@ bool CFaceViewView::CalcMarkerPos(float nEyeX, float nEyeY, D3DXMATRIX lightView
 		D3DXMatrixInverse(&Tinv, 0, &T);
 		D3DXVec3Transform(&vorgW, &originW, &Tinv);
 		D3DXVECTOR3 originW2(vorgW.x, vorgW.y, vorgW.z);
-		bool bX, bUp, bZ;
 		BOOL bHit = FALSE;
 		DWORD dwCount = 0;
 		FLOAT nU = 0;
 		FLOAT nV = 0;
 		FLOAT nDist = 0;
-
+		//calulcate where the ray intersects with the face mesh
 		HRESULT hr = D3DXIntersect(pDoc->m_pFaceMesh, &originW2, &dirW, &bHit, &dwFaceIndex, &nU, &nV, &nDist, &pAllHits, &dwCount);
 		if (SUCCEEDED(hr) && bHit)
 		{
@@ -198,10 +195,10 @@ bool CFaceViewView::CalcMarkerPos(float nEyeX, float nEyeY, D3DXMATRIX lightView
 			vThisTri[0].pos.x;
 			vThisTri[0].pos.y;
 			float w = 1 - (nU + nV);
-
-			X = (w * vThisTri[0].pos.x + nU * vThisTri[1].pos.x + nV * vThisTri[2].pos.x);// + nX;
+			//finally get the xyz world coordintates and return them to the caller
+			X = (w * vThisTri[0].pos.x + nU * vThisTri[1].pos.x + nV * vThisTri[2].pos.x);
 			Y = (w * vThisTri[0].pos.y + nU * vThisTri[1].pos.y + nV * vThisTri[2].pos.y);
-			Z = (w * vThisTri[0].pos.z + nU * vThisTri[1].pos.z + nV * vThisTri[2].pos.z);// + nY;
+			Z = (w * vThisTri[0].pos.z + nU * vThisTri[1].pos.z + nV * vThisTri[2].pos.z);
 			bHitResult = true;
 			ib->Unlock();
 			vb->Unlock();
@@ -216,7 +213,7 @@ bool CFaceViewView::CalcMarkerPos(float nEyeX, float nEyeY, D3DXMATRIX lightView
 	}
 	return bHitResult;
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::DrawMarker(float nEyeX, float nEyeY, D3DXMATRIX Rotation, D3DXMATRIX lightView, D3DXMATRIX lightLens, ID3DXMesh* pMesh)
 {
 	CFaceViewDoc* pDoc = GetDocument();
@@ -232,23 +229,23 @@ void CFaceViewView::DrawMarker(float nEyeX, float nEyeY, D3DXMATRIX Rotation, D3
 		return;
 	}
 	D3DXMATRIX T;
-	D3DXMatrixTranslation(&T, X, Y, Z);// -bbCenter.x, -bbCenter.y, -bbCenter.z );
-	mWorld = T;// *Scale;
-	mWorld *= Rotation;
-	mWVP = mWorld * mView * mProj;
-	D3DXMatrixInverse(&mWI, NULL, &mWorld);
-	D3DXMatrixTranspose(&mWIT, &mWI);
+	D3DXMatrixTranslation(&T, X, Y, Z);
+	m_World = T;
+	m_World *= Rotation;
+	m_WVP = m_World * m_View * m_Proj;
+	D3DXMatrixInverse(&m_WI, NULL, &m_World);
+	D3DXMatrixTranspose(&m_WIT, &m_WI);
  
-	m_pEffects->m_pFX->SetMatrix("mWorld", &mWorld);
-	m_pEffects->m_pFX->SetMatrix("mWVP", &mWVP);
-	m_pEffects->m_pFX->SetMatrix("mWIT", &mWIT);
+	m_pEffects->m_pFX->SetMatrix("mWorld", &m_World);
+	m_pEffects->m_pFX->SetMatrix("mWVP", &m_WVP);
+	m_pEffects->m_pFX->SetMatrix("mWIT", &m_WIT);
 
 	HRESULT hr = m_pEffects->m_pFX->SetTexture(m_pEffects->m_hTexture, pDoc->m_pTexture);
 
 	m_pEffects->m_pFX->CommitChanges();
 	pMesh->DrawSubset(0);
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::Render()
 {
 	CFaceViewDoc* pDoc = GetDocument();
@@ -256,32 +253,36 @@ void CFaceViewView::Render()
 	if (!pDoc) {
 		return;
 	}
+	//Note: in the code below, 'light' (as in lightlens, lightView etc) refers to the position of the camera projecting the texture onto the mesh.
+	//This corresponds to the 'camera' referred to in the Microsoft Deep3DFaceReconstruction github project that has a FOV of 12.59 at is located 10 m in front of the face mesh.
+	//It is analgous to a light source when calculating the shadow map (for example), but it isn't really a light source.
 	D3DXVECTOR3 lightPosW(0, 0, 10);
 	D3DXMATRIX mLightWVP;
-	float m_nFarPlane = 50;
-	float nfFOV = 2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI;
+	float m_nNearPlane = 1.0f;
+	float m_nFarPlane = 50.0f;
+	float nfFOV = static_cast<float>(2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);
 	if (gd3dDevice)
 	{
-		gd3dDevice->SetRenderState(D3DRS_FILLMODE, mFillmode);
+		gd3dDevice->SetRenderState(D3DRS_FILLMODE, m_Fillmode);
 		// Render to the view's local swap chain and depth/stencil buffer.
 		IDirect3DSurface9* backbuffer = 0;
-		HRESULT hr = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &backbuffer);
+		HRESULT hr = m_SwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &backbuffer);
 		hr = gd3dDevice->SetRenderTarget(0, backbuffer);
-		hr = gd3dDevice->SetDepthStencilSurface(mDepthStencil);
+		hr = gd3dDevice->SetDepthStencilSurface(m_DepthStencil);
 		ReleaseCOM(backbuffer);
-		//shadow map used to get 
+	 
 		if (pDoc && pDoc->m_pFaceMesh && !m_bSetTextureMode)
 		{
+			//create the shadow map used for shadowing ( as displayed in red on rendered mask)
 			m_pDepthMap->beginScene();
 			HRESULT hr = gd3dDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x00000000, 1.0f, 0);
 			hr = m_pEffects->m_pFX->SetTechnique(m_pEffects->m_hDepthTech);
-			//
 			D3DXMATRIX lightView;
-			D3DXVECTOR3 lightUpW(0.0f, 1.0f, 0.0f);
-			D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &lightUpW);
+			D3DXVECTOR3 UpW(0.0f, 1.0f, 0.0f);//specify up direction
+			D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &UpW);
 			D3DXMATRIX lightLens;
-			float lightFOV = nfFOV;// 2 * atan(112.0f / (1015.0f)) * 180.0f / 3.D3DX_PI;
-			D3DXMatrixPerspectiveFovLH(&lightLens, lightFOV, 1, 1.0f, m_nFarPlane);//used to be 100
+			float LightFOV = static_cast<float>(2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);//12.59 - see MS Deep3D project
+			D3DXMatrixPerspectiveFovLH(&lightLens, LightFOV, 1, m_nNearPlane, m_nFarPlane);//used to be 100
 			mLightWVP = lightView * lightLens;
 			UINT numPasses = 0;
 			hr = m_pEffects->m_pFX->Begin(&numPasses, 0);
@@ -289,8 +290,9 @@ void CFaceViewView::Render()
 			hr = m_pEffects->m_pFX->SetTexture(m_pEffects->m_hShadowMap, m_pDepthMap->d3dTex());
 			hr = m_pEffects->m_pFX->SetFloatArray("vEye", &lightPosW.x, 3);
 			hr = m_pEffects->m_pFX->SetValue(m_pEffects->m_hFarPlane, &m_nFarPlane, sizeof(float));
-			m_pEffects->m_pFX->SetMatrix(m_pEffects->m_hLightWVP, &(mLightWVP));
+			hr = m_pEffects->m_pFX->SetMatrix(m_pEffects->m_hLightWVP, &(mLightWVP));
 			hr = m_pEffects->m_pFX->CommitChanges();
+			//draw the mesh
 			hr = pDoc->m_pFaceMesh->DrawSubset(0);
 			hr = m_pEffects->m_pFX->EndPass();
 			hr = m_pEffects->m_pFX->End();
@@ -304,8 +306,8 @@ void CFaceViewView::Render()
 		GetClientRect(&rClient);
 		gd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 		{
-			D3DXCOLOR c1(0.25, 0.25, 0.25, 1);
-			D3DXCOLOR c2(0.43, 0.43, 0.43, 1);
+			D3DXCOLOR c1(0.25f, 0.25f, 0.25f, 1.0f);
+			D3DXCOLOR c2(0.43f,0.43f, 0.43f, 1.0f);
 			gd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 			DrawTransformedQuad(gd3dDevice, -0.5f, -0.5f, 0.f, (FLOAT)(rClient.right - rClient.left),
 				(FLOAT)(rClient.bottom - rClient.top),
@@ -345,45 +347,46 @@ void CFaceViewView::Render()
 					//rotate mesh so that the face is alignbed with the X/Y plane
 					D3DXMATRIX lightView;
 					D3DXMATRIX lightLens;
-					D3DXVECTOR3 lightUpW(0.0f, 1.0f, 0.0f);
-					D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &lightUpW);
-					float lightFOV = 2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI;
-					D3DXMatrixPerspectiveFovLH(&lightLens, lightFOV, 1, 1.0f, m_nFarPlane);//used to be 100 
+					D3DXVECTOR3 UpW(0.0f, 1.0f, 0.0f);
+					D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &UpW);
+					float ProjFOV = static_cast<float>(2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);//FOV used from creating the mesh/texture in the MS Deep3DFaceReconstruction.
+					D3DXMatrixPerspectiveFovLH(&lightLens, ProjFOV, 1, m_nNearPlane, m_nFarPlane);
 					FLOAT nLeftX = 0;
 					FLOAT nLeftY = 0;
 					FLOAT nLeftZ = 0;
 					FLOAT nRightX = 0;
 					FLOAT nRightY = 0;
 					FLOAT nRightZ = 0;
-					float nEyeX = pDoc->m_nLeftEyeX / 224.0f;
-					float nEyeY = pDoc->m_nLeftEyeY / 224.0f;
-					//project landmark values for left/right eye from cropped (224 x 224) image space to world space
+					float nEyeX = pDoc->m_nLeftEyeX / gTextureDim;
+					float nEyeY = pDoc->m_nLeftEyeY / gTextureDim;
+					//project landmark values for left/right eye from cropped (224 x 224) 2D texture space to 3D world space
 					if (CalcMarkerPos(nEyeX, nEyeY, lightView, lightLens, nLeftX, nLeftY, nLeftZ))
 					{
-						nEyeX = pDoc->m_nRightEyeX / 224.0f;
-						nEyeY = pDoc->m_nRightEyeY / 224.0f;
+						nEyeX = pDoc->m_nRightEyeX / gTextureDim;
+						nEyeY = pDoc->m_nRightEyeY / gTextureDim;
 						if (CalcMarkerPos(nEyeX, nEyeY, lightView, lightLens, nRightX, nRightY, nRightZ))
 						{
 							//found XYZ coord of both left and right eye
 							//Use these to work out what the rotation should be such that both eyes are aligned to the view plane.
 							//Y is Up, so find angles on the X/Z plane.
-							float nLeftHypot = _hypot(nLeftX, nLeftZ);
-							float nRightHypot = _hypot(nRightX, nRightZ);
-							float nLeftAngle = atan2(nLeftZ , nLeftX);
-							float nRightAngle = atan2(nRightZ, nRightX);
+							float nLeftHypot = static_cast<float>(_hypot(nLeftX, nLeftZ));
+							float nRightHypot = static_cast<float>(_hypot(nRightX, nRightZ));
+							float nLeftAngle = static_cast<float>(atan2(nLeftZ , nLeftX));
+							float nRightAngle = static_cast<float>(atan2(nRightZ, nRightX));
 							float nCenterAngle = (nRightAngle + nLeftAngle) / 2;
 							float nLeftAngleDegrees = nLeftAngle / D3DX_PI * 180;
 							float nRightAngleDegrees = nRightAngle / D3DX_PI * 180;
 							float nCenterAngleDegrees = nCenterAngle / D3DX_PI * 180;
-							//use a numerical approach to find an angle where the Z value on both eyes are closest
 							//float nRotationDegrees = nRotationY / 3.D3DX_PI * 180;
+							//We use a numerical approach to find an angle where the Z value on both eyes are closest (rather than try and documenta an analytical approach)
+							//We do a sweep from -90 degree of the current angle to +90 degrees and take the angle with the two new points arethe same
 							float nSmallest = -1;
 							float nSmallestRad = 0;
 							for (int h = 0; h < 180; h++)
 							{ 
-								float nRad = h * D3DX_PI / 180.0f - (90 * D3DX_PI / 180.0f);
-								float nNewLeftZ = nLeftHypot * sin(nRad + nLeftAngle);
-								float nNewRightZ = nRightHypot * sin(nRad + nRightAngle);
+								float nRad = (h - 90) * D3DX_PI / 180.0f;
+								float nNewLeftZ = static_cast<float>(nLeftHypot * sin(nRad + nLeftAngle));
+								float nNewRightZ = static_cast<float>(nRightHypot * sin(nRad + nRightAngle));
 								float nDiff = abs(nNewLeftZ - nNewRightZ);
 								if (nDiff < nSmallest || nSmallest < 0)
 								{
@@ -396,18 +399,18 @@ void CFaceViewView::Render()
 								nRotationY = nRotationY - nSmallestRad;
 							}
 							//do the same but this timne around the Z axis
-							nRotationZ = 0;// 3.D3DX_PI / 4;
-							nLeftHypot = _hypot(nLeftX, nLeftY);
-							nRightHypot = _hypot(nRightX, nRightY);
-							nLeftAngle = atan2(nLeftY, nLeftX);
-							nRightAngle = atan2(nRightY, nRightX);
+							nRotationZ = 0;
+							nLeftHypot = static_cast<float>(_hypot(nLeftX, nLeftY));
+							nRightHypot = static_cast<float>(_hypot(nRightX, nRightY));
+							nLeftAngle = static_cast<float>(atan2(nLeftY, nLeftX));
+							nRightAngle = static_cast<float>(atan2(nRightY, nRightX));
 							nSmallest = -1;
 							nSmallestRad = 0;
 							for (int h = 0; h < 180; h++)
 							{
-								float nRad = h * D3DX_PI / 180.0f - (90 * D3DX_PI / 180.0f);
-								float nNewLeftY = nLeftHypot * sin(nRad + nLeftAngle);
-								float nNewRightY = nRightHypot * sin(nRad + nRightAngle);
+								float nRad = (h - 90) * D3DX_PI / 180.0f;
+								float nNewLeftY = static_cast<float>(nLeftHypot * sin(nRad + nLeftAngle));
+								float nNewRightY = static_cast<float>(nRightHypot * sin(nRad + nRightAngle));
 								float nDiff = abs(nNewLeftY - nNewRightY);
 								if (nDiff < nSmallest || nSmallest < 0)
 								{
@@ -422,41 +425,41 @@ void CFaceViewView::Render()
 						}
 					}
 				}
-				//D3DXMatrixRotationY(&mR, nRotationY);
-				D3DXMatrixRotationYawPitchRoll(&Rotation, nRotationY, 0, nRotationZ);
-				mWorld = Translate * Scale * Rotation;
-
-				D3DXVECTOR3 vEye(0, 1, 10);//the eye position that we view the meshes when we render them
 				
-				hr = m_pEffects->m_pFX->SetBool("useDiffuseTexture", FALSE);
+				D3DXMatrixRotationYawPitchRoll(&Rotation, nRotationY, 0, nRotationZ);
+				m_World = Translate * Scale * Rotation;
+				//Note, when rendering, we do not need to use the same 12.59 FOV as we need to use when projecting the texture onto the mesh (see the MS Deep3D... project), but we'll re-use it here anyway
+				float nRenderFOV = 12.59f;
+				D3DXVECTOR3 vEye(0, 0, 10);//the eye position that we view the meshes when we render them. 
+				//Note, this can be anything, that is it dones't have to be 10 units in front like it needs to be when projecting the texture onto the face. But like the FOV we'll resuse it here anyway.
 				hr = gd3dDevice->SetVertexDeclaration(VertexPNT::Decl);
 				gd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
 				hr = m_pEffects->m_pFX->SetTexture(m_pEffects->m_hTexture, pDoc->m_pTexture);
 				hr = m_pEffects->m_pFX->SetTexture(m_pEffects->m_hShadowMap, m_pDepthMap->d3dTex());
 				hr = m_pEffects->m_pFX->SetTechnique(m_pEffects->m_hProjTech);
-			 
-				D3DXMatrixLookAtLH(&mView, &vEye, &(D3DXVECTOR3(0, 0, 0)), &(D3DXVECTOR3(0, 1, 0)));
-				D3DXMatrixPerspectiveFovLH(&mProj, nfFOV, 1, 1.0f, m_nFarPlane);
-				mWVP = mWorld * mView * mProj;
-				D3DXMatrixInverse(&mWI, NULL, &mWorld);
-				D3DXMatrixTranspose(&mWIT, &mWI);
+				
+				D3DXMatrixLookAtLH(&m_View, &vEye, &(D3DXVECTOR3(0, 0, 0)), &(D3DXVECTOR3(0, 1, 0)));
+				D3DXMatrixPerspectiveFovLH(&m_Proj, nRenderFOV, 1, m_nNearPlane, m_nFarPlane);
+				m_WVP = m_World * m_View * m_Proj;
+				D3DXMatrixInverse(&m_WI, NULL, &m_World);
+				D3DXMatrixTranspose(&m_WIT, &m_WI);
 
 				UINT passes = 0;
 				if (SUCCEEDED(m_pEffects->m_pFX->Begin(&passes, 0)))
 				{
 					m_pEffects->m_pFX->BeginPass(0);
 
-					m_pEffects->m_pFX->SetMatrix("mWorld", &mWorld);
-					m_pEffects->m_pFX->SetMatrix("mWVP", &mWVP);
-					m_pEffects->m_pFX->SetMatrix("mWIT", &mWIT);
+					m_pEffects->m_pFX->SetMatrix("mWorld", &m_World);
+					m_pEffects->m_pFX->SetMatrix("mWVP", &m_WVP);
+					m_pEffects->m_pFX->SetMatrix("mWIT", &m_WIT);
 
 					D3DXMATRIX lightView;
 					D3DXMATRIX lightLens;
-					D3DXVECTOR3 lightUpW(0.0f, 1.0f, 0.0f);
+					D3DXVECTOR3 UpW(0.0f, 1.0f, 0.0f);
 					{
-						D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &lightUpW);
-						float lightFOV = 2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI;
-						D3DXMatrixPerspectiveFovLH(&lightLens, lightFOV, 1, 1.0f, m_nFarPlane);//used to be 100
+						D3DXMatrixLookAtLH(&lightView, &lightPosW, &(D3DXVECTOR3(0, 0, 0)), &UpW);
+						float ProjFOV = static_cast<float>((float)2 * atan(112.0f / (1015.0f)) * 180.0f / D3DX_PI);
+						D3DXMatrixPerspectiveFovLH(&lightLens, ProjFOV, 1, m_nNearPlane, m_nFarPlane);//used to be 100
 						m_pEffects->m_pFX->SetMatrix(m_pEffects->m_hLightWVP, &(mLightWVP));
 					}
 					m_pEffects->m_pFX->SetValue(m_pEffects->m_hFarPlane, &m_nFarPlane, sizeof(float));
@@ -468,15 +471,16 @@ void CFaceViewView::Render()
 					m_pEffects->m_pFX->End();
 
 					{
+						//display the left and right eye as a blue mesh
 						HRESULT hr = m_pEffects->m_pFX->SetTechnique(m_pEffects->m_hColorTech);
 						if (SUCCEEDED(m_pEffects->m_pFX->Begin(&passes, 0)))
 						{
 							m_pEffects->m_pFX->BeginPass(0);
-							float nEyeX = pDoc->m_nLeftEyeX / 224.0f;
-							float nEyeY = pDoc->m_nLeftEyeY / 224.0f;
+							float nEyeX = pDoc->m_nLeftEyeX / gTextureDim;
+							float nEyeY = pDoc->m_nLeftEyeY / gTextureDim;
 							DrawMarker(nEyeX, nEyeY, Rotation, lightView, lightLens, pDoc->m_pEyeMesh);
-							nEyeX = pDoc->m_nRightEyeX / 224.0f;
-							nEyeY = pDoc->m_nRightEyeY / 224.0f;
+							nEyeX = pDoc->m_nRightEyeX / gTextureDim;
+							nEyeY = pDoc->m_nRightEyeY / gTextureDim;
 							DrawMarker(nEyeX, nEyeY, Rotation, lightView, lightLens, pDoc->m_pEyeMesh);
 
 							/*float nNoseX = pDoc->m_nNoseX / 224.0f;
@@ -486,11 +490,9 @@ void CFaceViewView::Render()
 							m_pEffects->m_pFX->EndPass();
 							m_pEffects->m_pFX->End();
 						}
-					}
-				 
+					}				 
 				} 
 			}
-
 		}
 
 		hr = gd3dDevice->EndScene();
@@ -499,35 +501,34 @@ void CFaceViewView::Render()
 		// for this presentation.  That is, we use the CMainFrame window's
 		// HWND to initialize D3D, but we draw into the view windows.
 		// Also note that we use the swap chain's present method.
-		hr = mSwapChain->Present(0, 0, GetSafeHwnd(), 0, 0);
+		hr = m_SwapChain->Present(0, 0, GetSafeHwnd(), 0, 0);
 		gd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	}
 }
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::OnDraw(CDC* /*pDC*/)
 {
 	 
 }
-
-
+//--------------------------------------------------------------------------------------------------//
 // CFaceViewView printing
-
 BOOL CFaceViewView::OnPreparePrinting(CPrintInfo* pInfo)
 {
 	// default preparation
 	return DoPreparePrinting(pInfo);
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: add extra initialization before printing
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: add cleanup after printing
 }
 
-
+//--------------------------------------------------------------------------------------------------//
 // CFaceViewView diagnostics
 
 #ifdef _DEBUG
@@ -535,23 +536,22 @@ void CFaceViewView::AssertValid() const
 {
 	CView::AssertValid();
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::Dump(CDumpContext& dc) const
 {
 	CView::Dump(dc);
 }
-
+//--------------------------------------------------------------------------------------------------//
 CFaceViewDoc* CFaceViewView::GetDocument() const // non-debug version is inline
 {
 	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CFaceViewDoc)));
 	return (CFaceViewDoc*)m_pDocument;
 }
 #endif //_DEBUG
-
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::Init(CEffects* pEffects, D3DFILLMODE defaultFillmode)
 {
-	mFillmode = defaultFillmode;
+	m_Fillmode = defaultFillmode;
 	m_pEffects = pEffects;
 
 	CRect R;
@@ -562,18 +562,18 @@ void CFaceViewView::Init(CEffects* pEffects, D3DFILLMODE defaultFillmode)
 	m_pDepthMap = new DrawableTex2D(4096, 4096, 1, D3DFMT_R32F, true, D3DFMT_D24X8, vp, false);
 	m_pDepthMap->OnResetDevice(gd3dDevice);
 }
-
+//--------------------------------------------------------------------------------------------------//
 void CFaceViewView::ReCreateBuffers(int w, int h)
 {
 	// Destroy the old ones.
-	ReleaseCOM(mSwapChain);
-	ReleaseCOM(mDepthStencil);
+	ReleaseCOM(m_SwapChain);
+	ReleaseCOM(m_DepthStencil);
 
 	// Create the swapchain associated with this view object.
-	md3dPP.hDeviceWindow = GetSafeHwnd();
-	md3dPP.BackBufferWidth = w;
-	md3dPP.BackBufferHeight = h;
-	HRESULT hr = gd3dDevice->CreateAdditionalSwapChain(&md3dPP, &mSwapChain);
+	m_d3dPP.hDeviceWindow = GetSafeHwnd();
+	m_d3dPP.BackBufferWidth = w;
+	m_d3dPP.BackBufferHeight = h;
+	HRESULT hr = gd3dDevice->CreateAdditionalSwapChain(&m_d3dPP, &m_SwapChain);
 
 	// A swap chain doesn't have an implicit depth/stencil buffer, so
 	// we need to create and manage one ourselves.
@@ -581,12 +581,10 @@ void CFaceViewView::ReCreateBuffers(int w, int h)
 		w, h, D3DFMT_D24S8,
 		D3DMULTISAMPLE_NONE, 0,
 		true, // discard depth 
-		&mDepthStencil, 0);
+		&m_DepthStencil, 0);
 }
-
+//--------------------------------------------------------------------------------------------------//
 // CFaceViewView message handlers
-
-
 void CFaceViewView::OnSize(UINT nType, int cx, int cy)
 {
 	CView::OnSize(nType, cx, cy);
@@ -605,14 +603,14 @@ void CFaceViewView::OnSize(UINT nType, int cx, int cy)
 	
 	}
 }
-
-
+//--------------------------------------------------------------------------------------------------//
 BOOL CFaceViewView::OnEraseBkgnd(CDC* pDC)
 {
 	// Stop MFC from erasing the background since we do this with D3D.
 	// This avoids flicker when resizing the window, for example.
 	return FALSE;
 }
+//--------------------------------------------------------------------------------------------------//
 HRESULT CFaceViewView::DrawTexturedQuad(LPDIRECT3DDEVICE9 pDevice,
 	FLOAT x, FLOAT y, FLOAT z,
 	FLOAT width, FLOAT height,
@@ -620,7 +618,7 @@ HRESULT CFaceViewView::DrawTexturedQuad(LPDIRECT3DDEVICE9 pDevice,
 	D3DXVECTOR2 uvBottomLeft, D3DXVECTOR2 uvBottomRight,
 	LPDIRECT3DTEXTURE9 pTexture)
 {
-	//--------------------------------------------------------------------------------------------------//
+	 
 	 
 	PPVERT QuadCenter[4] =
 	{		x,			y,			z, 1,  uvTopLeft.x,		uvTopLeft.y,	 0, 0,
@@ -666,8 +664,7 @@ HRESULT CFaceViewView::DrawTexturedQuad(LPDIRECT3DDEVICE9 pDevice,
 	//return pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(quad[0]));
 	return hr;
 }
-
-
+//--------------------------------------------------------------------------------------------------//
 HRESULT CFaceViewView::DrawTransformedQuad(LPDIRECT3DDEVICE9 pDevice,
 	FLOAT x, FLOAT y, FLOAT z,
 	FLOAT width, FLOAT height,
@@ -690,9 +687,7 @@ HRESULT CFaceViewView::DrawTransformedQuad(LPDIRECT3DDEVICE9 pDevice,
 	pDevice->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
 	return pDevice->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(quad[0]));
 }
-
-
-
+//--------------------------------------------------------------------------------------------------//
 HRESULT CFaceViewView::DrawTransformedQuad(LPDIRECT3DDEVICE9 pDevice,
 	FLOAT x, FLOAT y, FLOAT z,
 	FLOAT width, FLOAT height,

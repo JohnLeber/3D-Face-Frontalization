@@ -17,12 +17,12 @@ protected: // create from serialization only
 public:
 	CSplitterWnd m_wndSplitter;
 	BOOL m_bSplitterCreated;
-	IDirect3D9* md3dObject;
-	D3DPRESENT_PARAMETERS md3dPP;
+	IDirect3D9* m_d3dObject;
+	D3DPRESENT_PARAMETERS m_d3dPP;
 	CEffects* m_pEffects;
 	LPDIRECT3DTEXTURE9	m_pTexture;
 	void Render();
-	CFaceViewView* mView[4]; // [0] Quadrant I
+	CFaceViewView* m_pView[4]; // [0] Quadrant I
 								// [1] Quadrant II
 								// [2] Quadrant III
 								// [3] Quadrant IV
@@ -50,6 +50,7 @@ protected:  // control bar embedded members
 // Generated message map functions
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnDropFiles(HDROP hDropInfo);
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
