@@ -179,10 +179,7 @@ bool CFaceViewView::CalcMarkerPos(float nEyeX, float nEyeY, D3DXMATRIX lightView
 			VertexPNT* pVertices;
 			ib->Lock(0, 0, (void**)&pIndices, 0);
 			vb->Lock(0, 0, (void**)&pVertices, 0);
-
-			hr = gd3dDevice->SetIndices(ib);
-			hr = gd3dDevice->SetVertexDeclaration(VertexPNT::Decl);
-			hr = gd3dDevice->SetStreamSource(0, vb, 0, sizeof(VertexPNT));
+			 
 			VertexPNT vThisTri[3];
 
 			DWORD* nThisTri;
