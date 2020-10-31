@@ -1,4 +1,4 @@
-# 3D Face Alignment
+# 3D Face Frontalization
 
 **Introduction**
 
