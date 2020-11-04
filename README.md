@@ -8,9 +8,6 @@ To compile the software use VS 2019 with MFC enabled, and the June 2010 DirectX 
 
 To use the software, open a .mesh file from the sample data folder.
 
-The tool was written to explore the possibility of using computer vision techniques to assist in detecting vision impairment in young children. Certain eye tests are made difficult with children who are too young to keep their face calibrated with the testing equipment. By dynamically creating a 3D model of their face and rotating that towards the camera it may be possible to reduce the extent of the problem. 
-
-
 
 
 ![alt text](https://github.com/nodecomplete/FaceView/blob/master/FaceView/ScreenShot.jpg)
