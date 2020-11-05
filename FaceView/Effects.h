@@ -1,7 +1,7 @@
 #pragma once
 class CEffects
 {
- 
+	bool DoesFileExist(CString strFile);
 public:
 	CEffects();
 	~CEffects();
