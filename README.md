@@ -1,6 +1,6 @@
 # 3D Face Frontalization
 
->**Note**: This is part one of a two part project I assigned to myself to help me understand Microsoft's Deep-3D-Face-Reconstruction paper. [Click here for part two](https://github.com/nodecomplete/3DMM-Face-Sample).
+>**Note**: This is part one of a two part project I assigned to myself to help me understand Microsoft's [Deep-3D-Face-Reconstruction](https://github.com/microsoft/Deep3DFaceReconstruction) paper. [Click here for part two](https://github.com/nodecomplete/3DMM-Face-Sample).
 
 ## Introduction
 
