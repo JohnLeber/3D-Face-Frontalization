@@ -1,5 +1,7 @@
 # 3D Face Frontalization
 
+>**Note**: This is part one of a two part project I assigned to myself to help me understand Microsoft's Deep-3D-Face-Reconstruction paper. [Click here for part two](https://github.com/nodecomplete/3DMM-Face-Sample).
+
 ## Introduction
 
 This application is a C++ Windows DirectX based tool used for viewing some of the output files from [Microsoft's Deep-3D-Face-Reconstruction project](https://github.com/microsoft/Deep3DFaceReconstruction). Deep3DFaceReconstruction takes a 2D image of a face and outputs a 3D mesh, cropped image and landmark files (eyes, nose and mouth). The tool displays the cropped image in the top-left quadrant. The 3D mesh, with the cropped image projected on to it, is displayed in the top-right quadrant. A shadow mapping technique is used to highlight in red the part of the mesh that is occluded in the original image (bottom-left quadrant). The 2D landmark coordinates for the left and right eye are projected from texture space to world space and displayed in blue. These landmarks are used to rotate the image (Yaw and Roll) and align it with the camera as can be seen in the bottom right quadrant.
