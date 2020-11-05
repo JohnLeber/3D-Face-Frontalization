@@ -9,15 +9,15 @@ This application is a C++ Windows DirectX based tool used for viewing some of th
 
 1) The software was built using [Visual Studio 2019 community edition](https://visualstudio.microsoft.com/downloads/). Be sure to install the MFC module.
 
-2) It requires the DirectX 9 [June 2010 DirectX SDK ](https://www.microsoft.com/en-nz/download/details.aspx?id=6812)
+2) The DirectX [June 2010 DirectX SDK ](https://www.microsoft.com/en-nz/download/details.aspx?id=6812) must be installed.
 
 ## Using the software
 
 To use the software, open a .mesh file from the sample data folder, or the drag the file from Windows Explorer on to the main application window
 
-
-
 ![alt text](https://github.com/nodecomplete/FaceView/blob/master/FaceView/ScreenShot.jpg)
+
+
 
 
 
