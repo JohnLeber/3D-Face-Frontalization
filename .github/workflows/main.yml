@@ -1,0 +1,58 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on: 
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: windows-2019
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+        
+      # Activate cache
+      - name: Start DXSDK Cache
+        id:   dxcache
+        uses: actions/cache@v1
+        with:
+          path: DXSDK
+          key:  dxsdk-includes
+       
+      # Download DirectX SDK
+      # Only extract files that are required
+      - name: Download DXSDK if needed
+        if:    steps.dxcache.outputs.cache-hit != 'true'
+        run:   |
+                 curl -L https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o _DX2010_.exe
+                 7z x _DX2010_.exe DXSDK/Include/*.*
+                 7z x _DX2010_.exe DXSDK/Lib/x64/*.*
+                 7z x _DX2010_.exe DXSDK/Lib/x86/*.*
+                 rm -fR _DX*_ _DX*_.exe
+        shell: bash
+        
+      # Runs a single command using the runners shell
+      - name: Build FaceMorph
+        run: | 
+              cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"  
+              .\MSBuild.exe $Env:GITHUB_WORKSPACE\FaceMorph\FaceMorph.vcxproj
+        env:
+          DXSDK_DIR: ${{ github.workspace }}\DXSDK
+          # inflating: ./eigen/eigen-3.3.8/Eigen/Core  
+               
+      # Runs a set of commands using the runners shell
+      - name: Final Step
+        run: |
+            echo Add other actions to build,
+            echo test, and deploy your project.
