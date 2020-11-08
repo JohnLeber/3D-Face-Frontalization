@@ -18,6 +18,10 @@ Presented is a C++/DirectX Windows based application used for viewing some of th
 
 To use the software, open a .mesh file from the sample data folder, or the drag the file from Windows Explorer on to the main application window
 
+## Further Reading
+
+For more information on the DirectX rendering method used in this application see "[Introduction To 3D Game Programming With Directx 9.0C: A Shader Approach](https://www.amazon.com/Introduction-Game-Programming-Directx-9-0C/dp/1598220160)" by Frank Luna.
+
 ![alt text](https://github.com/nodecomplete/FaceView/blob/master/FaceView/ScreenShot.jpg)
 
 
