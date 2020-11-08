@@ -9,7 +9,7 @@
 #ifndef SHARED_HANDLERS
 #include "FaceView.h"
 #endif
-
+#include "FileHelper.h"
 #include "FaceViewDoc.h"
 # define LINE_BUFF_SIZE 4096
 #include <propkey.h>
@@ -201,14 +201,15 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	{
 		CString strLandmarkFile = strObjFile;
 		strLandmarkFile.Replace(L"_mesh.mesh", L"_landmarks.txt");
-		FILE* pFile = 0;
-		errno_t ret = _tfopen_s(&pFile, strLandmarkFile, TEXT("r"));
-		if (ret == 0)
+		//FILE* pFile = 0; 
+		//errno_t ret = _tfopen_s(&pFile, strLandmarkFile, TEXT("r"));
+		CFileHandle file_landmark(strLandmarkFile, TEXT("r"));
+		if (file_landmark.GetFile() != 0)
 		{
 			int nLandmarkID = 0;
-			while (!feof(pFile))
+			while (!feof(file_landmark.GetFile()))
 			{
-				fgets(buffer, LINE_BUFF_SIZE, pFile);
+				fgets(buffer, LINE_BUFF_SIZE, file_landmark.GetFile());
 				if (nLandmarkID == 0)
 				{
 					sscanf_s(buffer + 1, "%f %f", &m_nLeftEyeX, &m_nLeftEyeY);
@@ -223,7 +224,7 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 				}
 				nLandmarkID++;
 			}
-			fclose(pFile);
+			file_landmark.Close();
 		}
 		else
 		{
@@ -241,15 +242,13 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	INT nF3 = 0;
 	//m_pFaceMesh
 	 
-	FILE* pFile = 0;
-	errno_t ret = _tfopen_s(&pFile, lpszPathName, TEXT("r"));
-	if (ret != 0) return FALSE;
+	CFileHandle file(lpszPathName, TEXT("r")); 
 	int numVertices = 0;
 	int numFaces = 0;
-	while (!feof(pFile))
+	while (!feof(file.GetFile()))
 	{
 		buffer[0] = 0;
-		fgets(buffer, LINE_BUFF_SIZE, pFile);
+		fgets(buffer, LINE_BUFF_SIZE, file.GetFile());
 		if (0 == strncmp("v ", buffer, 2))			numVertices++;
 		else if (0 == strncmp("f ", buffer, 2))
 		{
@@ -258,19 +257,18 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	}
 	if(numVertices == 0 || numFaces == 0)
 	{ 
-		fclose(pFile); 
 		return FALSE;
 	} 
-	rewind(pFile);
+	rewind(file.GetFile());
 	std::vector<D3DXVECTOR3> vVertices;
 	std::vector<INT> vIndices;
 	vVertices.reserve(numVertices);
 	vIndices.reserve(numFaces * 3);
 	long nVertexCounter = 0;
-	while (!feof(pFile))
+	while (!feof(file.GetFile()))
 	{
 		buffer[0] = '\0';
-		fgets(buffer, LINE_BUFF_SIZE, pFile); 
+		fgets(buffer, LINE_BUFF_SIZE, file.GetFile());
 		if (0 == strncmp("v ", buffer, 2))
 		{
 			nVertexCounter++;
@@ -297,8 +295,8 @@ BOOL CFaceViewDoc::OnOpenDocument(LPCTSTR lpszPathName)
 			vIndices.push_back(nF2 - 1);
 			vIndices.push_back(nF3 - 1);
 		}
-	}
-	fclose(pFile);
+	} 
+	file.Close();//destructor will close anyway, but may as well close now
 
 	D3DVERTEXELEMENT9 VertexPNTElements[] =
 	{

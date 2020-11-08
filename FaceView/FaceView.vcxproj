@@ -202,6 +202,7 @@
     <ClInclude Include="FaceView.h" />
     <ClInclude Include="FaceViewDoc.h" />
     <ClInclude Include="FaceViewView.h" />
+    <ClInclude Include="FileHelper.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="pch.h" />

@@ -1,7 +1,6 @@
 #pragma once
 class CEffects
-{
-	bool DoesFileExist(CString strFile);
+{ 
 public:
 	CEffects();
 	~CEffects();
@@ -10,8 +9,6 @@ public:
 	ID3DXEffect* m_pFX;
 	D3DXHANDLE m_hTexture, m_hDrawTexTech, m_hProjTech, m_hDepthTech, m_hColorTech;
 	D3DXHANDLE m_hShadowMap;
-	D3DXHANDLE m_hLightWVP, m_hFarPlane;
-
-
+	D3DXHANDLE m_hLightWVP, m_hFarPlane; 
 };
 

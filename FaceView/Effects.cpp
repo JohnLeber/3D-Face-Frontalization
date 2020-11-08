@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Effects.h"
+#include "FileHelper.h"
 //-----------------------------------------------------------------------------------------//
 CEffects::CEffects()
 {
@@ -45,11 +46,11 @@ bool CEffects::Initialize()
 			long nRight = strFileName.ReverseFind(_T('\\'));//move one folder up
 			strFileName = strFileName.Left(nRight);
 			nNumAttempts++;
-			if (DoesFileExist(strFileName + L"\\FaceView.fx")) {
+			if (CFileHelper::DoesFileExist(strFileName + L"\\FaceView.fx")) {
 				bFoundFX = true;
 				strFileName.Append(L"\\FaceView.fx");
 			}
-			else if (DoesFileExist(strFileName + L"\\FaceView\\FaceView.fx")) {
+			else if (CFileHelper::DoesFileExist(strFileName + L"\\FaceView\\FaceView.fx")) {
 				bFoundFX = true;
 				strFileName.Append(L"\\FaceView\\FaceView.fx");
 			}
@@ -84,23 +85,4 @@ bool CEffects::Initialize()
 
 	return true;
 }
-//-----------------------------------------------------------------------------------------// 
-bool CEffects::DoesFileExist(CString strFile)
-{
-	GetFileAttributes(strFile); // from winbase.h
-	DWORD dwError = GetLastError();
-	if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFile) && (
-		dwError == ERROR_FILE_NOT_FOUND ||
-		dwError == ERROR_PATH_NOT_FOUND ||
-		dwError == ERROR_INVALID_NAME ||
-		dwError == ERROR_INVALID_DRIVE ||
-		dwError == ERROR_NOT_READY ||
-		dwError == ERROR_INVALID_PARAMETER ||
-		dwError == ERROR_BAD_PATHNAME ||
-		dwError == ERROR_BAD_NETPATH))
-	{
-		//File not found
-		return false;
-	}
-	return true;
-}
+ 
