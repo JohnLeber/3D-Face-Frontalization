@@ -18,7 +18,7 @@ Presented is a C++/DirectX Windows based application used for viewing some of th
 
 To use the software, open a .mesh file from the sample data folder, or the drag the file from Windows Explorer on to the main application window
 
-![alt text](https://github.com/JohnLeber/FaceView/blob/master/FaceView/ScreenShot.jpg)
+![alt text](https://github.com/JohnLeber/3D-Face-Frontalization/blob/master/FaceView/ScreenShot.jpg)
 
 ## Further Reading
 
