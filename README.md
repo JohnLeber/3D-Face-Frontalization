@@ -2,7 +2,7 @@
 
 > Part one of a two part project to help me understand Microsoft's [Deep-3D-Face-Reconstruction](https://github.com/microsoft/Deep3DFaceReconstruction) paper. [Click here for part two](https://github.com/JohnLeber/3DMM-Face-Sample).
 
-> **Warning**: This project uses DirectX 9, which is outdated now and may cause difficutly when building on modern Windows installations.
+> **Warning**: This project uses DirectX 9, which is outdated now and may cause difficulties when building on modern Windows installations.
 
 ## Introduction
 
