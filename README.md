@@ -1,5 +1,7 @@
 # 3D Face Frontalization  ![Build](https://github.com/JohnLeber/3D-Face-Frontalization/workflows/Build/badge.svg)
 
+> **Warning**: This project uses DirectX 9, which is outdated now and may cause difficutly when building on modern Windows installations.
+
 > Part one of a two part project to help me understand Microsoft's [Deep-3D-Face-Reconstruction](https://github.com/microsoft/Deep3DFaceReconstruction) paper. [Click here for part two](https://github.com/JohnLeber/3DMM-Face-Sample).
 
 ## Introduction
